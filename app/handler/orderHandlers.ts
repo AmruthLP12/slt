@@ -43,4 +43,25 @@ const addOrder = async (orderFields: AddOrderFields): Promise<any> => {
   }
 };
 
-export { addOrder };
+const getOrders = async (): Promise<any> => {
+  try {
+    const response = await fetch("/api/orders");
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch orders: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error("Error fetching orders:", error.message);
+      return { message: "Error fetching orders", error: error.message };
+    }
+
+    console.error("Unknown error:", error);
+    return { message: "Unknown error", error: String(error) };
+  }
+};
+
+export { addOrder , getOrders };
