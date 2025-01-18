@@ -70,3 +70,17 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+
+@media print {
+  @page {
+    margin: 0;
+    size: auto;
+  }
+  body {
+    margin: 1.6cm;
+  }
+  .print-hidden {
+    display: none !important;
+  }
+}
