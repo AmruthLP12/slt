@@ -3,19 +3,19 @@ import User from "@/models/Users";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(
-  request: NextRequest,
+  req: NextRequest,
   { params }: { params: { userId: string } }
 ) {
   try {
     await connectDB();
 
     const userId = params.userId;
-    const body = await request.json();
+    const body = await req.json();
     const { ...updateFields } = body;
 
     if (!userId) {
       return NextResponse.json(
-        { message: "Invalid request: 'userId' is required" },
+        { message: `Invalid request: ${userId} is required` },
         { status: 400 }
       );
     }
@@ -44,7 +44,6 @@ export async function PUT(
 }
 
 export async function DELETE(
-  req: NextRequest,
   { params }: { params: { userId: string } }
 ) {
   try {

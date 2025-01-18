@@ -2,7 +2,7 @@ import connectDB from "@/lib/connectDB";
 import Order from "@/models/Invoice";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(req: NextRequest, res: NextResponse) {
+export async function POST(req: NextRequest) {
   try {
     connectDB();
     const data = await req.json();
@@ -14,7 +14,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
   }
 }
 
-export async function GET(res: NextResponse) {
+export async function GET() {
   try {
     connectDB();
     const orders = await Order.find({});
