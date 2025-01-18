@@ -2,7 +2,7 @@ import connectDB from "@/lib/connectDB";
 import User from "@/models/Users";
 import { NextResponse } from "next/server";
 
-export async function GET(res: NextResponse) {
+export async function GET() {
   try {
     connectDB();
     const users = await User.find({}, { password: 0 });

@@ -4,18 +4,18 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
     await connectDB();
 
-    const userId = params.userId;
+    const { userId } = await params;
     const body = await req.json();
     const { ...updateFields } = body;
 
     if (!userId) {
       return NextResponse.json(
-        { message: `Invalid request: ${userId} is required` },
+        { message: `Invalid request: userId is required` },
         { status: 400 }
       );
     }
@@ -44,14 +44,19 @@ export async function PUT(
 }
 
 export async function DELETE(
-  { params }: { params: { userId: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
     await connectDB();
 
-    const userId = params?.userId;
+    const { userId } = await params;
 
     const user = await User.findByIdAndDelete(userId);
+
+    if (!user) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
+    }
 
     return NextResponse.json({ message: "User deleted", user });
   } catch (error) {
@@ -59,3 +64,4 @@ export async function DELETE(
     return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
 }
+
