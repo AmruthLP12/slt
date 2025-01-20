@@ -85,4 +85,55 @@ const getOrderByID = async (orderId: string): Promise<any> => {
   }
 };
 
-export { addOrder , getOrders, getOrderByID };
+const updateOrderIdStatus = async (orderId: string, newDeliveryStatus: boolean,newDeliveryDate: Date | undefined) => {
+  try {
+    const response = await fetch(`/api/orders/${orderId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        isDelivered: newDeliveryStatus,
+        deliveredDate: newDeliveryStatus
+          ? newDeliveryDate?.toISOString()
+          : null,
+      }),
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to update order: ${response.statusText}`);
+    }
+    return response;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error("Error updating order:", error.message);
+      return { message: "Error updating order", error: error.message };
+    }
+
+    console.error("Unknown error:", error);
+    return { message: "Unknown error", error: String(error) };
+  }
+};
+
+const deleteOrder = async (orderId: string) => {
+  try {
+    const response = await fetch(`/api/orders/${orderId}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to delete order: ${response.statusText}`);
+    }
+
+    return response;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error("Error deleting order:", error.message);
+      return { message: "Error deleting order", error: error.message };
+    }
+
+    console.error("Unknown error:", error);
+    return { message: "Unknown error", error: String(error) };
+  }
+}
+
+export { addOrder , getOrders, getOrderByID, updateOrderIdStatus, deleteOrder };

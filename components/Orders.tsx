@@ -1,6 +1,10 @@
 "use client";
 
-import { getOrders } from "@/app/handler/orderHandlers";
+import {
+  deleteOrder,
+  getOrders,
+  updateOrderIdStatus,
+} from "@/app/handler/orderHandlers";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { format, isEqual, parseISO, startOfDay } from "date-fns";
@@ -68,7 +72,6 @@ const Orders = () => {
     setIsLoading(true);
     try {
       const order = await getOrders();
-      console.log("Fetched Orders:", order);
       setOrders(order.orders || []);
     } catch (error) {
       console.error("Error fetching orders:", error);
@@ -135,22 +138,11 @@ const Orders = () => {
     if (!selectedOrder) return;
 
     try {
-      const response = await fetch(`/api/orders/${selectedOrder._id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          isDelivered: newDeliveryStatus,
-          deliveredDate: newDeliveryStatus
-            ? newDeliveryDate?.toISOString()
-            : null,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update order status");
-      }
+      const response = await updateOrderIdStatus(
+        selectedOrder._id,
+        newDeliveryStatus,
+        newDeliveryDate
+      );
 
       setOrders(
         orders.map((order) =>
@@ -188,13 +180,7 @@ const Orders = () => {
     if (!selectedOrder) return;
 
     try {
-      const response = await fetch(`/api/orders/${selectedOrder._id}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete order");
-      }
+      const response = await deleteOrder(selectedOrder._id);
 
       setOrders(orders.filter((order) => order._id !== selectedOrder._id));
 
