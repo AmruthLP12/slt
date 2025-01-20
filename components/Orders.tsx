@@ -58,15 +58,28 @@ const Orders = () => {
     undefined
   );
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     fetchOrders();
   }, []);
 
   const fetchOrders = async () => {
-    const order = await getOrders();
-    console.log("Fetched Orders:", order);
-    setOrders(order.orders);
+    setIsLoading(true);
+    try {
+      const order = await getOrders();
+      console.log("Fetched Orders:", order);
+      setOrders(order.orders || []);
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch orders. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const filteredOrders = orders.filter((order: Order) => {
@@ -241,122 +254,132 @@ const Orders = () => {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6">Orders</h1>
 
-      <div className="mb-6 space-y-4">
-        <div className="flex items-center space-x-4 justify-between">
-          <input
-            type="text"
-            placeholder="Search by phone or card number"
-            className="w-full p-2 pl-10 border rounded-md"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <Search className="absolute left-3 text-gray-400" size={20} />
-          <DatePicker
-            date={deliveryDateFilter}
-            setDate={setDeliveryDateFilter}
-            label="Delivery Date"
-          />
-          <DatePicker
-            date={currentDateFilter}
-            setDate={setCurrentDateFilter}
-            label="Current Date"
-          />
-          <DatePicker
-            date={deliveredDateFilter}
-            setDate={setDeliveredDateFilter}
-            label="Delivered Date"
-          />
-        </div>
+      {isLoading ? (
+        <div className="text-center">Loading orders...</div>
+      ) : orders.length === 0 ? (
+        <div className="text-center">No orders found.</div>
+      ) : (
+        <>
+          <div className="mb-6 space-y-4">
+            <div className="flex items-center space-x-4 justify-between">
+              <input
+                type="text"
+                placeholder="Search by phone or card number"
+                className="w-full p-2 pl-10 border rounded-md"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <Search className="absolute left-3 text-gray-400" size={20} />
+              <DatePicker
+                date={deliveryDateFilter}
+                setDate={setDeliveryDateFilter}
+                label="Delivery Date"
+              />
+              <DatePicker
+                date={currentDateFilter}
+                setDate={setCurrentDateFilter}
+                label="Current Date"
+              />
+              <DatePicker
+                date={deliveredDateFilter}
+                setDate={setDeliveredDateFilter}
+                label="Delivered Date"
+              />
+            </div>
 
-        <Select value={deliveryStatus} onValueChange={setDeliveryStatus}>
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Delivery Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Orders</SelectItem>
-            <SelectItem value="delivered">Delivered</SelectItem>
-            <SelectItem value="undelivered">Undelivered</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+            <Select value={deliveryStatus} onValueChange={setDeliveryStatus}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue placeholder="Delivery Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Orders</SelectItem>
+                <SelectItem value="delivered">Delivered</SelectItem>
+                <SelectItem value="undelivered">Undelivered</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="border p-2 text-left">Card Number</th>
-              <th className="border p-2 text-left">Customer Name</th>
-              <th className="border p-2 text-left">Phone Number</th>
-              <th className="border p-2 text-left">Delivery Date</th>
-              <th className="border p-2 text-left">Current Date</th>
-              <th className="border p-2 text-left">Delivered Date</th>
-              <th className="border p-2 text-left">Total Amount</th>
-              <th className="border p-2 text-left">Advance</th>
-              <th className="border p-2 text-left">Remaining Amount</th>
-              <th className="border p-2 text-left">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredOrders.map((order: Order) => (
-              <tr key={order._id} className="hover:bg-gray-50">
-                <td className="border p-2">
-                  <Link
-                    href={`/dashboard/orders/${order._id}`}
-                    className="text-blue-600 hover:underline"
-                  >
-                    {order.cardNumber}
-                  </Link>
-                </td>
-                <td className="border p-2">
-                  {order.customerName || "Unnamed Customer"}
-                </td>
-                <td className="border p-2">{order.phoneNumber}</td>
-                <td className="border p-2">
-                  {format(parseISO(order.deliveryDate), "dd/MM/yyyy")}
-                </td>
-                <td className="border p-2">
-                  {format(new Date(), "dd/MM/yyyy")}
-                </td>
-                <td className="border p-2">
-                  {order.isDelivered && order.deliveredDate
-                    ? format(parseISO(order.deliveredDate), "dd/MM/yyyy")
-                    : "Not Delivered"}
-                </td>
-                <td className="border p-2 text-blue-600 font-semibold">
-                  ₹{order.grandTotal}
-                </td>
-                <td className="border p-2 text-green-600 font-semibold">
-                  ₹{order.advance}
-                </td>
-                <td className="border p-2 text-red-600 font-semibold">
-                  ₹{order.remainingTotal}
-                </td>
-                <td className="border p-2">
-                  <div className="flex space-x-2">
-                    <Button
-                      onClick={() => handleDeliveryToggle(order)}
-                      variant={order.isDelivered ? "destructive" : "default"}
-                    >
-                      {order.isDelivered
-                        ? "Unmark Delivered"
-                        : "Mark Delivered"}
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        setSelectedOrder(order);
-                        setIsDeleteModalOpen(true);
-                      }}
-                      variant="outline"
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="border p-2 text-left">Card Number</th>
+                  <th className="border p-2 text-left">Customer Name</th>
+                  <th className="border p-2 text-left">Phone Number</th>
+                  <th className="border p-2 text-left">Delivery Date</th>
+                  <th className="border p-2 text-left">Current Date</th>
+                  <th className="border p-2 text-left">Delivered Date</th>
+                  <th className="border p-2 text-left">Total Amount</th>
+                  <th className="border p-2 text-left">Advance</th>
+                  <th className="border p-2 text-left">Remaining Amount</th>
+                  <th className="border p-2 text-left">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredOrders.map((order: Order) => (
+                  <tr key={order._id} className="hover:bg-gray-50">
+                    <td className="border p-2">
+                      <Link
+                        href={`/dashboard/orders/${order._id}`}
+                        className="text-blue-600 hover:underline"
+                      >
+                        {order.cardNumber}
+                      </Link>
+                    </td>
+                    <td className="border p-2">
+                      {order.customerName || "Unnamed Customer"}
+                    </td>
+                    <td className="border p-2">{order.phoneNumber}</td>
+                    <td className="border p-2">
+                      {format(parseISO(order.deliveryDate), "dd/MM/yyyy")}
+                    </td>
+                    <td className="border p-2">
+                      {format(new Date(), "dd/MM/yyyy")}
+                    </td>
+                    <td className="border p-2">
+                      {order.isDelivered && order.deliveredDate
+                        ? format(parseISO(order.deliveredDate), "dd/MM/yyyy")
+                        : "Not Delivered"}
+                    </td>
+                    <td className="border p-2 text-blue-600 font-semibold">
+                      ₹{order.grandTotal}
+                    </td>
+                    <td className="border p-2 text-green-600 font-semibold">
+                      ₹{order.advance}
+                    </td>
+                    <td className="border p-2 text-red-600 font-semibold">
+                      ₹{order.remainingTotal}
+                    </td>
+                    <td className="border p-2">
+                      <div className="flex space-x-2">
+                        <Button
+                          onClick={() => handleDeliveryToggle(order)}
+                          variant={
+                            order.isDelivered ? "destructive" : "default"
+                          }
+                        >
+                          {order.isDelivered
+                            ? "Unmark Delivered"
+                            : "Mark Delivered"}
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            setSelectedOrder(order);
+                            setIsDeleteModalOpen(true);
+                          }}
+                          variant="outline"
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
       {isUpdateModalOpen && selectedOrder && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-6 rounded-lg">
