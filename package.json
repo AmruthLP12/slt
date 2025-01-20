@@ -27,7 +27,6 @@
     "mongoose": "^8.9.5",
     "next": "15.1.4",
     "react": "^19.0.0",
-    "react-day-picker": "^8.10.1",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.54.2",
     "tailwind-merge": "^2.6.0",
