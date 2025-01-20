@@ -53,7 +53,7 @@ export default function InvoiceComponent() {
   const [customerName, setCustomerName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [cardNumber, setCardNumber] = useState("");
-  const [currentDate, setCurrentDate] = useState("");
+  const [currentDate, setCurrentDate] = useState(new Date().toISOString().split("T")[0]);
   const [deliveryDate, setDeliveryDate] = useState("");
   const [items, setItems] = useState<InvoiceItem[]>([]);
   const [advance, setAdvance] = useState<number | string>("");
