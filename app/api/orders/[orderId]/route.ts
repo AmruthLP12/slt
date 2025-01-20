@@ -2,11 +2,11 @@ import connectDB from "@/lib/connectDB"
 import Order from "@/models/Invoice"
 import { type NextRequest, NextResponse } from "next/server"
 
-export async function GET(req: NextRequest, { params }: { params: { orderId: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ orderId: string }> }) {
   try {
     await connectDB()
 
-    const { orderId } = params
+    const { orderId } = await params
 
     console.log(orderId, "orderId")
 
@@ -27,11 +27,11 @@ export async function GET(req: NextRequest, { params }: { params: { orderId: str
   }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { orderId: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ orderId: string }> }) {
   try {
     await connectDB()
 
-    const { orderId } = params
+    const { orderId } = await params
     const { isDelivered, deliveredDate } = await req.json()
 
     if (!orderId) {
@@ -56,11 +56,11 @@ export async function PUT(req: NextRequest, { params }: { params: { orderId: str
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { orderId: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ orderId: string }> }) {
   try {
     await connectDB()
 
-    const { orderId } = params
+    const { orderId } = await params
 
     if (!orderId) {
       return NextResponse.json({ message: "Order ID is required" }, { status: 400 })
